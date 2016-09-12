@@ -35,24 +35,39 @@ namespace CombineFiles
         {
             string line;
             StreamReader inputFile = new StreamReader(_inputDirectory + inputFileName);
+            bool avoidNextLines = false;
             while ((line = inputFile.ReadLine()) != null)
             {
-                if (line.Contains("#include"))
+                if (avoidNextLines)
                 {
-                    int startIndex;
-                    if ((startIndex = line.IndexOf("\"", 9)) > 0)
+                    if (line.Contains("#endif // _LOCAL"))
                     {
-                        int lastIndex = line.LastIndexOf("\"", line.Length);
-                        WriteToFile(line.Substring(startIndex + 1, lastIndex - startIndex - 1));
+                        avoidNextLines = false;
+                    }
+                }
+                else
+                {
+                    if (line.Contains("#include"))
+                    {
+                        int startIndex;
+                        if ((startIndex = line.IndexOf("\"", 9)) > 0)
+                        {
+                            int lastIndex = line.LastIndexOf("\"", line.Length);
+                            WriteToFile(line.Substring(startIndex + 1, lastIndex - startIndex - 1));
+                        }
+                        else
+                        {
+                            _outputFile.WriteLine(line);
+                        }
+                    }
+                    else if (line.Contains("#ifdef _LOCAL"))
+                    {
+                        avoidNextLines = true;
                     }
                     else
                     {
                         _outputFile.WriteLine(line);
                     }
-                }
-                else
-                {
-                    _outputFile.WriteLine(line);
                 }
             }
 
