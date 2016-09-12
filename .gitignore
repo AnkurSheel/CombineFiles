@@ -1,0 +1,7 @@
+*.suo
+*/obj
+*/bin
+*.opendb
+*.sdf
+*.user
+System.Data.pdb/
