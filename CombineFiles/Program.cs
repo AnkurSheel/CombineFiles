@@ -12,6 +12,7 @@ namespace CombineFiles
     {
         private static string _inputDirectory;
         private static StreamWriter _outputFile;
+        private static HashSet<string> _includedFiles;
 
         static void Main(string[] args)
         {
@@ -27,6 +28,7 @@ namespace CombineFiles
             string outputFileName = args[3];
 
             _outputFile = new StreamWriter(outputDirectory + outputFileName);
+            _includedFiles = new HashSet<string>();
             WriteToFile(inputFileName);
             _outputFile.Close();
         }
@@ -34,13 +36,18 @@ namespace CombineFiles
         private static void WriteToFile(string inputFileName)
         {
             string line;
+            if (!File.Exists(_inputDirectory + inputFileName))
+            {
+                return;
+            }
+
             StreamReader inputFile = new StreamReader(_inputDirectory + inputFileName);
             bool avoidNextLines = false;
             while ((line = inputFile.ReadLine()) != null)
             {
                 if (avoidNextLines)
                 {
-                    if (line.Contains("#endif // _LOCAL"))
+                    if (line.Contains("#endif  // _LOCAL"))
                     {
                         avoidNextLines = false;
                     }
@@ -53,7 +60,15 @@ namespace CombineFiles
                         if ((startIndex = line.IndexOf("\"", 9)) > 0)
                         {
                             int lastIndex = line.LastIndexOf("\"", line.Length);
-                            WriteToFile(line.Substring(startIndex + 1, lastIndex - startIndex - 1));
+                            string includeFile = line.Substring(startIndex + 1, lastIndex - startIndex - 1);
+                            if (!(_includedFiles.Contains(includeFile)))
+                            {
+                                _includedFiles.Add(includeFile);
+                                WriteToFile(includeFile);
+                                includeFile = includeFile.Replace(".h", ".cpp");
+                                WriteToFile(includeFile);
+                            }
+                            
                         }
                         else
                         {
