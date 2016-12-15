@@ -10,7 +10,6 @@ namespace CombineFiles
 {
     class Program
     {
-        private static string _inputDirectory;
         private static StreamWriter _outputFile;
         private static HashSet<string> _includedFiles;
 
@@ -22,26 +21,26 @@ namespace CombineFiles
                 return;
             }
 
-            _inputDirectory = args[0];
+            string inputDirectory = args[0];
             string inputFileName = args[1];
             string outputDirectory = args[2];
             string outputFileName = args[3];
 
             _outputFile = new StreamWriter(outputDirectory + outputFileName);
             _includedFiles = new HashSet<string>();
-            WriteToFile(inputFileName);
+            WriteToFile(inputFileName, inputDirectory);
             _outputFile.Close();
         }
 
-        private static void WriteToFile(string inputFileName)
+        private static void WriteToFile(string inputFileName, string inputDirectory)
         {
             string line;
-            if (!File.Exists(_inputDirectory + inputFileName))
+            if (!File.Exists(inputDirectory + inputFileName))
             {
                 return;
             }
 
-            StreamReader inputFile = new StreamReader(_inputDirectory + inputFileName);
+            StreamReader inputFile = new StreamReader(inputDirectory + inputFileName);
             bool avoidNextLines = false;
             while ((line = inputFile.ReadLine()) != null)
             {
@@ -56,17 +55,26 @@ namespace CombineFiles
                 {
                     if (line.Contains("#include"))
                     {
-                        int startIndex;
-                        if ((startIndex = line.IndexOf("\"", 9)) > 0)
+                        int startIndexOfPath;
+                        if ((startIndexOfPath = line.IndexOf("\"", 9)) > 0)
                         {
-                            int lastIndex = line.LastIndexOf("\"", line.Length);
-                            string includeFile = line.Substring(startIndex + 1, lastIndex - startIndex - 1);
-                            if (!(_includedFiles.Contains(includeFile)))
+                            int lastIndexOfPath = line.LastIndexOf("\"", line.Length);
+                            string includeFile = line.Substring(startIndexOfPath + 1, lastIndexOfPath - startIndexOfPath - 1);
+                            int startIndexOfFile = includeFile.LastIndexOf("\\");
+                            string fileName = includeFile;
+                            string newDirectory = inputDirectory;
+                            if (startIndexOfFile >= 0)
                             {
-                                _includedFiles.Add(includeFile);
-                                WriteToFile(includeFile);
-                                includeFile = includeFile.Replace(".h", ".cpp");
-                                WriteToFile(includeFile);
+                                fileName = includeFile.Substring(startIndexOfFile + 1, includeFile.Length - startIndexOfFile - 1);
+                                newDirectory += includeFile.Substring(0, includeFile.Length - fileName.Length);
+                            }
+                            
+                            if (!(_includedFiles.Contains(fileName)))
+                            {
+                                _includedFiles.Add(fileName);
+                                WriteToFile(fileName, newDirectory);
+                                fileName = fileName.Replace(".h", ".cpp");
+                                WriteToFile(fileName, newDirectory);
                             }
                             
                         }
