@@ -5,3 +5,6 @@
 *.sdf
 *.user
 System.Data.pdb/
+bin/
+*.config
+*.manifest
