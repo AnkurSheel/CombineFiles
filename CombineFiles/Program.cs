@@ -83,7 +83,12 @@ namespace CombineFiles
                     {
                         avoidNextLines = true;
                     }
-                    else if (!line.StartsWith("//"))
+                    else if (line.StartsWith("//") || line.Contains("_LOCAL"))
+                    {
+                        continue;
+
+                    }
+                    else
                     {
                         _outputFile.WriteLine(line);
                     }
