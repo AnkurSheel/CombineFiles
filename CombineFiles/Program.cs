@@ -56,7 +56,7 @@ namespace CombineFiles
                         {
                             int lastIndexOfPath = line.LastIndexOf("\"", line.Length);
                             string includeFile = line.Substring(startIndexOfPath + 1, lastIndexOfPath - startIndexOfPath - 1);
-                            int startIndexOfFile = includeFile.LastIndexOf("\\");
+                            int startIndexOfFile = includeFile.LastIndexOf("/");
                             string fileName = includeFile;
                             string newDirectory = inputDirectory;
                             if (startIndexOfFile >= 0)
